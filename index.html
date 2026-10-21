@@ -552,7 +552,7 @@
       els.list.appendChild(emptyBlock('这个浏览器读不了 CSV', ['换一个现代浏览器打开试试。']));
       return;
     }
-    fetch(DATA_URL, { cache: 'no-store' }).then(function (res) {
+    fetch(DATA_URL + '?v=' + new Date().getTime(), { cache: 'no-store' }).then(function (res) {
       if (!res.ok) throw new Error('HTTP ' + res.status);
       return res.text();
     }).then(function (text) {
