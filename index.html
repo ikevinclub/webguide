@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>kevin's 网页指南</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0a0c11;
+    --bg-soft: #0f121a;
+    --card: #141925;
+    --card-hover: #1b2130;
+    --line: #232a3a;
+    --txt: #e8ecf4;
+    --txt-dim: #9aa5b8;
+    --txt-faint: #6b7688;
+    --accent: #5b8cff;
+  }
+  html, body { min-height: 100%; }
+  body {
+    background:
+      radial-gradient(900px 500px at 12% -8%, rgba(91,140,255,.16), transparent 60%),
+      radial-gradient(700px 400px at 92% 0%, rgba(167,139,250,.12), transparent 60%),
+      var(--bg);
+    color: var(--txt);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    -webkit-font-smoothing: antialiased;
+    padding: 0 0 64px;
+  }
+  .wrap { padding: 0 22px; }
+
+  /* ---------- header ---------- */
+  header { padding: 52px 0 26px; }
+  .brand { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  h1 { font-size: 25px; font-weight: 650; letter-spacing: -.02em; }
+  h1 span { color: var(--txt-faint); font-weight: 400; font-size: 15px; margin-left: 8px; letter-spacing: 0; }
+
+  /* ---------- controls ---------- */
+  .controls { margin: 30px 0 8px; display: flex; flex-direction: column; gap: 16px; }
+  .search { position: relative; }
+  .search svg { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); opacity: .45; }
+  #q {
+    width: 100%; padding: 13px 16px 13px 44px; font-size: 14.5px;
+    background: var(--bg-soft); color: var(--txt);
+    border: 1px solid var(--line); border-radius: 12px; outline: none;
+    transition: border-color .18s, box-shadow .18s;
+    font-family: inherit;
+  }
+  #q::placeholder { color: var(--txt-faint); }
+  #q:focus { border-color: rgba(91,140,255,.65); box-shadow: 0 0 0 3px rgba(91,140,255,.14); }
+
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip {
+    display: inline-flex; align-items: center; gap: 7px;
+    padding: 7px 13px; font-size: 13px; color: var(--txt-dim);
+    background: var(--bg-soft); border: 1px solid var(--line); border-radius: 999px;
+    cursor: pointer; user-select: none; transition: all .16s; font-family: inherit;
+  }
+  .chip:hover { color: var(--txt); border-color: #33405a; }
+  .chip .dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; opacity: .85; }
+  .chip .n { font-size: 11.5px; color: var(--txt-faint); font-variant-numeric: tabular-nums; }
+  .chip.on { color: #fff; background: rgba(91,140,255,.16); border-color: rgba(91,140,255,.55); }
+  .chip.on .n { color: rgba(255,255,255,.7); }
+
+  /* ---------- stats ---------- */
+  .meta {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 12px; margin: 26px 0 18px; padding-bottom: 12px;
+    border-bottom: 1px solid var(--line); font-size: 12.5px; color: var(--txt-faint);
+  }
+  .meta b { color: var(--txt-dim); font-weight: 600; font-variant-numeric: tabular-nums; }
+
+  /* ---------- sections ---------- */
+  section { margin-bottom: 34px; }
+  .sec-head { display: flex; align-items: center; gap: 10px; margin-bottom: 13px; }
+  .sec-head h2 { font-size: 14.5px; font-weight: 600; letter-spacing: .01em; }
+  .sec-head .bar { width: 3px; height: 15px; border-radius: 2px; }
+  .sec-head .cnt { font-size: 11.5px; color: var(--txt-faint); font-variant-numeric: tabular-nums; }
+
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(276px, 1fr)); gap: 12px; }
+
+  .card {
+    display: flex; flex-direction: column; gap: 9px;
+    padding: 15px 16px; background: var(--card);
+    border: 1px solid var(--line); border-radius: 13px;
+    text-decoration: none; color: inherit; position: relative; overflow: hidden;
+    transition: transform .18s cubic-bezier(.2,.8,.3,1), background .18s, border-color .18s, box-shadow .18s;
+  }
+  .card::before {
+    content: ""; position: absolute; inset: 0 auto 0 0; width: 2px;
+    background: var(--c, var(--accent)); opacity: 0; transition: opacity .18s;
+  }
+  .card:hover {
+    background: var(--card-hover); border-color: #33405a; transform: translateY(-2px);
+    box-shadow: 0 10px 26px rgba(0,0,0,.34);
+  }
+  .card:hover::before { opacity: 1; }
+  .card .row1 { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+  .card .name { font-size: 14.5px; font-weight: 600; line-height: 1.4; word-break: break-word; }
+  .card .arrow { flex: 0 0 auto; opacity: 0; transform: translate(-3px,3px); transition: all .18s; color: var(--txt-faint); }
+  .card:hover .arrow { opacity: 1; transform: none; }
+  .card .desc {
+    font-size: 12.8px; line-height: 1.62; color: var(--txt-dim);
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+  }
+  .card .foot {
+    display: flex; align-items: center; gap: 8px; margin-top: auto; padding-top: 3px;
+    font-size: 11.5px; color: var(--txt-faint); font-variant-numeric: tabular-nums;
+  }
+  .card .host { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .card .sep { opacity: .4; }
+  .tag {
+    flex: 0 0 auto; font-size: 10.5px; letter-spacing: .02em;
+    padding: 2px 7px; border-radius: 5px; color: var(--c);
+    background: color-mix(in srgb, var(--c) 14%, transparent);
+    border: 1px solid color-mix(in srgb, var(--c) 30%, transparent);
+    white-space: nowrap;
+  }
+
+  /* ---------- states ---------- */
+  .state { padding: 66px 20px; text-align: center; color: var(--txt-faint); }
+  .state .big { font-size: 34px; margin-bottom: 14px; opacity: .55; }
+  .state h3 { font-size: 15px; color: var(--txt-dim); font-weight: 600; margin-bottom: 7px; }
+  .state p { font-size: 13px; line-height: 1.75; }
+  .state code {
+    background: var(--bg-soft); border: 1px solid var(--line); border-radius: 5px;
+    padding: 1px 6px; font-size: 12px; color: #b9c6e0;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+  .skeleton { height: 104px; border-radius: 13px; background: linear-gradient(90deg,#141925,#1a2030,#141925); background-size: 200% 100%; animation: sk 1.3s linear infinite; }
+  .loading-note { font-size: 12.5px; color: var(--txt-faint); margin-bottom: 11px; }
+  @keyframes sk { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+  @media (max-width: 620px) {
+    header { padding: 34px 0 20px; }
+    h1 { font-size: 21px; }
+    h1 span { display: block; margin: 4px 0 0; }
+    .grid { grid-template-columns: 1fr; }
+    .wrap { padding: 0 16px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand">
+      <h1>kevin's 网页指南<span>Web Guide</span></h1>
+    </div>
+  </header>
+
+  <div class="controls">
+    <div class="search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#e8ecf4" stroke-width="2" stroke-linecap="round">
+        <circle cx="11" cy="11" r="7"></circle><line x1="16.5" y1="16.5" x2="21" y2="21"></line>
+      </svg>
+      <input id="q" type="text" placeholder="搜索名称、描述或域名…" autocomplete="off">
+    </div>
+    <div class="chips" id="chips"></div>
+  </div>
+
+  <div class="meta">
+    <span id="countText">收录 0 个网址</span>
+    <span id="filterText"></span>
+  </div>
+
+  <div id="list">
+    <div class="loading-note">正在载入…</div>
+    <div class="grid">
+      <div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  var DATABASE_ID = 'xaiFMzTquqNtrTRhGMDMEg';
+  var ALL = '全部';
+  var COLORS = {
+    'AI 工具': '#a78bfa',
+    '前端开发': '#38bdf8',
+    '独立开发': '#34d399',
+    '设计灵感': '#f472b6',
+    '投资理财': '#fbbf24',
+    '学习资料': '#22d3ee',
+    '其他': '#94a3b8'
+  };
+
+
+  var SLASH = String.fromCharCode(47);
+  var SCHEME_HTTP = 'http:' + SLASH + SLASH;
+  var SCHEME_HTTPS = 'https:' + SLASH + SLASH;
+  var DOUBLE_SLASH = SLASH + SLASH;
+
+  var state = {
+    rows: [],
+    cats: [],
+    cat: ALL,
+    keyword: '',
+    loaded: false
+  };
+
+  var els = {
+    chips: document.getElementById('chips'),
+    q: document.getElementById('q'),
+    list: document.getElementById('list'),
+    count: document.getElementById('countText'),
+    filter: document.getElementById('filterText')
+  };
+
+  function colorOf(cat) {
+    return COLORS[cat] || '#94a3b8';
+  }
+
+  function catOf(row) {
+    var v = row['分类'];
+    if (!v) return '未分类';
+    if (Object.prototype.toString.call(v) === '[object Array]') return v[0] || '未分类';
+    return String(v);
+  }
+
+  function nameOf(row) {
+    var v = row['名称'];
+    return v ? String(v).trim() : '';
+  }
+
+  function trimSlashes(s) {
+    var i = 0;
+    while (i < s.length && s.charAt(i) === SLASH) i++;
+    return s.slice(i);
+  }
+
+  function linkOf(row) {
+    var v = row['网址'];
+    if (Object.prototype.toString.call(v) === '[object Array]') v = v.length ? v[0] : null;
+    var link = '';
+    if (v && typeof v === 'object') link = v.link || v.text || '';
+    else if (v) link = String(v);
+    link = String(link || '').trim();
+    if (!link) return '';
+    var low = link.toLowerCase();
+    var hasScheme = (low.slice(0, 7) === SCHEME_HTTP) || (low.slice(0, 8) === SCHEME_HTTPS) || (low.slice(0, 2) === DOUBLE_SLASH);
+    if (!hasScheme) link = SCHEME_HTTPS + trimSlashes(link);
+    return link;
+  }
+
+  function hostOf(link) {
+    var s = String(link || '');
+    var i = s.indexOf(DOUBLE_SLASH);
+    if (i !== -1) s = s.slice(i + 2);
+    var h = s.split(SLASH)[0].split('?')[0];
+    if (h.toLowerCase().slice(0, 4) === 'www.') h = h.slice(4);
+    return h || s;
+  }
+
+  function dateOf(row) {
+    var v = row['收录日期'];
+    if (!v) return '';
+    var s = String(v);
+    var m = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if (m) return m[1] + '/' + m[2] + '/' + m[3];
+    return s;
+  }
+
+  function mark(el) {
+    return el;
+  }
+
+  /* ---------------- chips ---------------- */
+
+  function renderChips() {
+    els.chips.innerHTML = '';
+    var list = [ALL].concat(state.cats);
+    for (var i = 0; i < list.length; i++) {
+      (function (cat) {
+        var b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'chip' + (state.cat === cat ? ' on' : '');
+        if (cat !== ALL) {
+          b.style.color = colorOf(cat);
+          var dot = document.createElement('span');
+          dot.className = 'dot';
+          b.appendChild(dot);
+        }
+        var t = document.createElement('span');
+        t.textContent = cat;
+        b.appendChild(t);
+        var n = document.createElement('span');
+        n.className = 'n';
+        n.textContent = String(cat === ALL ? state.rows.length : state.rows.filter(function (r) { return catOf(r) === cat; }).length);
+        b.appendChild(n);
+        b.addEventListener('click', function () {
+          state.cat = cat;
+          renderChips();
+          renderList();
+        });
+        els.chips.appendChild(b);
+      })(list[i]);
+    }
+  }
+
+  /* ---------------- list ---------------- */
+
+  function matches(row) {
+    if (state.cat !== ALL && catOf(row) !== state.cat) return false;
+    var k = state.keyword.toLowerCase();
+    if (!k) return true;
+    var hay = [nameOf(row), row['描述'] || '', linkOf(row), catOf(row)].join(' ').toLowerCase();
+    return hay.indexOf(k) !== -1;
+  }
+
+  function card(row) {
+    var name = nameOf(row) || hostOf(linkOf(row)) || '未命名';
+    var link = linkOf(row);
+    var cat = catOf(row);
+    var desc = row['描述'] ? String(row['描述']).trim() : '';
+    var c = colorOf(cat);
+
+    var a = document.createElement('a');
+    a.className = 'card';
+    a.style.setProperty('--c', c);
+    if (link) {
+      a.href = link;
+      a.target = '_blank';
+      a.rel = 'noopener noreferrer';
+    }
+
+    var row1 = document.createElement('div');
+    row1.className = 'row1';
+    var nm = mark(document.createElement('div'));
+    nm.className = 'name';
+    nm.textContent = name;
+    row1.appendChild(nm);
+
+    var arrow = document.createElement('span');
+    arrow.className = 'arrow';
+    arrow.textContent = '\u2197';
+    row1.appendChild(arrow);
+    a.appendChild(row1);
+
+    if (desc) {
+      var d = mark(document.createElement('div'));
+      d.className = 'desc';
+      d.textContent = desc;
+      a.appendChild(d);
+    }
+
+    var foot = document.createElement('div');
+    foot.className = 'foot';
+
+    var tag = mark(document.createElement('span'));
+    tag.className = 'tag';
+    tag.style.setProperty('--c', c);
+    tag.textContent = cat;
+    foot.appendChild(tag);
+
+    var host = mark(document.createElement('span'));
+    host.className = 'host';
+    host.textContent = link ? hostOf(link) : '未填网址';
+    foot.appendChild(host);
+
+    var dt = dateOf(row);
+    if (dt) {
+      var sep = document.createElement('span');
+      sep.className = 'sep';
+      sep.textContent = '·';
+      foot.appendChild(sep);
+      var dEl = mark(document.createElement('span'));
+      dEl.textContent = dt;
+      foot.appendChild(dEl);
+    }
+
+    a.appendChild(foot);
+    return a;
+  }
+
+  function emptyBlock(title, lines) {
+    var box = document.createElement('div');
+    box.className = 'state';
+    var big = document.createElement('div');
+    big.className = 'big';
+    big.textContent = '\uD83D\uDCD1';
+    box.appendChild(big);
+    var h = document.createElement('h3');
+    h.textContent = title;
+    box.appendChild(h);
+    var p = document.createElement('p');
+    for (var i = 0; i < lines.length; i++) {
+      if (i) p.appendChild(document.createElement('br'));
+      var item = lines[i];
+      if (typeof item === 'string') {
+        p.appendChild(document.createTextNode(item));
+      } else {
+        var c = document.createElement('code');
+        c.textContent = item.code;
+        p.appendChild(c);
+      }
+    }
+    box.appendChild(p);
+    return box;
+  }
+
+  function renderList() {
+    var rows = state.rows.filter(matches);
+    els.list.innerHTML = '';
+
+    els.count.textContent = '';
+    els.count.appendChild(document.createTextNode('收录 '));
+    var cntB = document.createElement('b');
+    cntB.textContent = String(state.rows.length);
+    els.count.appendChild(cntB);
+    els.count.appendChild(document.createTextNode(' 个网址'));
+
+    els.filter.textContent = (state.cat === ALL && !state.keyword)
+      ? (rows.length ? '按分类归好，点卡片直达' : '')
+      : '筛出 ' + rows.length + ' 条';
+
+    if (!state.rows.length) {
+      els.list.appendChild(emptyBlock('还是个空本子', [
+        '发一条消息给小布就行，格式：',
+        { code: '网址 + 名称 + 分类' },
+        '分类可用：' + (state.cats.length ? state.cats.join(' / ') : 'AI 工具 / 前端开发 / 独立开发 …')
+      ]));
+      return;
+    }
+
+    if (!rows.length) {
+      els.list.appendChild(emptyBlock('这一栏还没东西', ['换个分类或改个关键词看看。']));
+      return;
+    }
+
+    var order = state.cats.slice();
+    var buckets = {};
+    var extras = [];
+    for (var i = 0; i < rows.length; i++) {
+      var c = catOf(rows[i]);
+      if (order.indexOf(c) === -1) { extras.push(c); order.push(c); }
+      if (!buckets[c]) buckets[c] = [];
+      buckets[c].push(rows[i]);
+    }
+
+    var showHeaders = (state.cat === ALL);
+    for (var j = 0; j < order.length; j++) {
+      var cat = order[j];
+      var items = buckets[cat];
+      if (!items || !items.length) continue;
+
+      var sec = document.createElement('section');
+      if (showHeaders) {
+        var head = document.createElement('div');
+        head.className = 'sec-head';
+        var bar = document.createElement('span');
+        bar.className = 'bar';
+        bar.style.background = colorOf(cat);
+        head.appendChild(bar);
+        var h2 = document.createElement('h2');
+        h2.textContent = cat;
+        head.appendChild(h2);
+        var cnt = document.createElement('span');
+        cnt.className = 'cnt';
+        cnt.textContent = items.length;
+        head.appendChild(cnt);
+        sec.appendChild(head);
+      }
+
+      var grid = document.createElement('div');
+      grid.className = 'grid';
+      for (var k = 0; k < items.length; k++) grid.appendChild(card(items[k]));
+      sec.appendChild(grid);
+      els.list.appendChild(sec);
+    }
+  }
+
+  /* ---------------- data (静态站：数据在构建时内联) ---------------- */
+
+  var ROWS = [{"名称": "BestJavPorn", "网址": [{"link": "https://www2.bestjavporn.com", "text": "www2.bestjavporn.com"}], "分类": "观影", "收录日期": "2026-10-21T00:00:00Z"}, {"名称": "supjav", "网址": [{"link": "https://supjav.com", "text": "supjav.com"}], "分类": "观影", "收录日期": "2026-10-21T00:00:00Z"}, {"名称": "ED2K", "网址": [{"link": "https://hjd2048.com/2048/thread.php?fid=43&page=1", "text": "hjd2048.com"}], "分类": "观影", "收录日期": "2026-10-21T00:00:00Z"}, {"名称": "Jable.TV", "网址": [{"link": "https://jp.jable.tv", "text": "jp.jable.tv"}], "分类": "观影", "收录日期": "2026-10-21T00:00:00Z"}];
+  var CATS = ["AI 工具", "前端开发", "独立开发", "设计灵感", "投资理财", "学习资料", "其他", "观影"];
+
+  function sortRows(rows) {
+    return rows.slice().sort(function (a, b) {
+      var da = a['收录日期'] ? String(a['收录日期']) : '';
+      var dbx = b['收录日期'] ? String(b['收录日期']) : '';
+      if (da === dbx) return nameOf(a).localeCompare(nameOf(b));
+      return da < dbx ? 1 : -1;
+    });
+  }
+
+  function init() {
+    state.cats = CATS.slice();
+    state.rows = sortRows(ROWS);
+    state.loaded = true;
+    renderChips();
+    renderList();
+  }
+
+  els.q.addEventListener('input', function (e) {
+    state.keyword = (e.target.value || '').trim();
+    renderList();
+  });
+
+  document.addEventListener('keydown', function (e) {
+    if (e.key === SLASH && document.activeElement !== els.q) {
+      e.preventDefault();
+      els.q.focus();
+    }
+  });
+
+  init();
+})();
+</script>
+</body>
+</html>
