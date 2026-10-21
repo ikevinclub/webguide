@@ -259,6 +259,16 @@
     return h || s;
   }
 
+  // 卡片上显示的域名：网址字段自带的 text 更可读时优先用它（比如中文域名）
+  function labelOf(row, link) {
+    if (!link) return '未填网址';
+    var v = row['网址'];
+    if (Object.prototype.toString.call(v) === '[object Array]') v = v.length ? v[0] : null;
+    var t = (v && typeof v === 'object') ? String(v.text || '').replace(/^\s+|\s+$/g, '') : '';
+    if (t && t.length <= 40 && t.indexOf(SLASH) === -1 && t.indexOf(' ') === -1) return t;
+    return hostOf(link);
+  }
+
   function dateOf(row) {
     var v = row['收录日期'];
     if (!v) return '';
@@ -362,7 +372,7 @@
 
     var host = mark(document.createElement('span'));
     host.className = 'host';
-    host.textContent = link ? hostOf(link) : '未填网址';
+    host.textContent = labelOf(row, link);
     foot.appendChild(host);
 
     var dt = dateOf(row);
