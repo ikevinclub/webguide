@@ -475,10 +475,65 @@
     }
   }
 
-  /* ---------------- data (静态站：数据在构建时内联) ---------------- */
+  /* ---------------- data（静态站：运行时读取同目录 records.csv） ---------------- */
 
-  var ROWS = [{"名称": "BestJavPorn", "网址": [{"link": "https://www2.bestjavporn.com", "text": "www2.bestjavporn.com"}], "分类": "观影", "收录日期": "2026-10-21T00:00:00Z"}, {"名称": "supjav", "网址": [{"link": "https://supjav.com", "text": "supjav.com"}], "分类": "观影", "收录日期": "2026-10-21T00:00:00Z"}, {"名称": "ED2K", "网址": [{"link": "https://hjd2048.com/2048/thread.php?fid=43&page=1", "text": "hjd2048.com"}], "分类": "观影", "收录日期": "2026-10-21T00:00:00Z"}, {"名称": "Jable.TV", "网址": [{"link": "https://jp.jable.tv", "text": "jp.jable.tv"}], "分类": "观影", "收录日期": "2026-10-21T00:00:00Z"}];
   var CATS = ["AI 工具", "前端开发", "独立开发", "设计灵感", "投资理财", "学习资料", "其他", "观影"];
+  var DATA_URL = 'records.csv';
+
+  function parseCSV(text) {
+    if (text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
+    var rows = [], row = [], field = '', inQ = false, i = 0, n = text.length;
+    while (i < n) {
+      var c = text.charAt(i);
+      if (inQ) {
+        if (c === '"') {
+          if (text.charAt(i + 1) === '"') { field += '"'; i += 2; continue; }
+          inQ = false;
+          i += 1;
+          continue;
+        }
+        field += c;
+        i += 1;
+        continue;
+      }
+      if (c === '"') { inQ = true; i += 1; continue; }
+      if (c === ',') { row.push(field); field = ''; i += 1; continue; }
+      if (c === '\r') { i += 1; continue; }
+      if (c === '\n') { row.push(field); rows.push(row); row = []; field = ''; i += 1; continue; }
+      field += c;
+      i += 1;
+    }
+    if (field.length || row.length) { row.push(field); rows.push(row); }
+    if (!rows.length) return [];
+    var head = rows.shift() || [];
+    var out = [];
+    for (var r = 0; r < rows.length; r++) {
+      var line = rows[r];
+      if (line.join('').replace(/\s/g, '') === '') continue;
+      var obj = {};
+      for (var j = 0; j < head.length; j++) {
+        var key = String(head[j] || '').replace(/^\s+|\s+$/g, '');
+        if (key) obj[key] = String(line[j] == null ? '' : line[j]).replace(/^\s+|\s+$/g, '');
+      }
+      out.push(obj);
+    }
+    return out;
+  }
+
+  // CSV 里网址是一列纯文本，转成内部结构 { 网址: [{ text, link }] }
+  function csvToRows(list) {
+    var out = [];
+    for (var i = 0; i < list.length; i++) {
+      var raw = list[i], row = {};
+      if (raw['名称']) row['名称'] = raw['名称'];
+      if (raw['分类']) row['分类'] = raw['分类'];
+      if (raw['描述']) row['描述'] = raw['描述'];
+      if (raw['收录日期']) row['收录日期'] = raw['收录日期'];
+      if (raw['网址']) row['网址'] = [{ text: raw['网址'], link: raw['网址'] }];
+      out.push(row);
+    }
+    return out;
+  }
 
   function sortRows(rows) {
     return rows.slice().sort(function (a, b) {
@@ -491,10 +546,30 @@
 
   function init() {
     state.cats = CATS.slice();
-    state.rows = sortRows(ROWS);
-    state.loaded = true;
-    renderChips();
-    renderList();
+    if (typeof fetch !== 'function') {
+      renderChips();
+      els.list.innerHTML = '';
+      els.list.appendChild(emptyBlock('这个浏览器读不了 CSV', ['换一个现代浏览器打开试试。']));
+      return;
+    }
+    fetch(DATA_URL, { cache: 'no-store' }).then(function (res) {
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      return res.text();
+    }).then(function (text) {
+      state.rows = sortRows(csvToRows(parseCSV(text)));
+      state.loaded = true;
+      renderChips();
+      renderList();
+    }).catch(function (err) {
+      console.error('[网页指南] records.csv 读取失败:', err);
+      state.loaded = true;
+      renderChips();
+      els.list.innerHTML = '';
+      els.list.appendChild(emptyBlock('清单没读上来', [
+        '确认 records.csv 与页面在同一目录，并且通过 http(s) 打开。',
+        '直接双击本地文件时，浏览器会拦掉读取。'
+      ]));
+    });
   }
 
   els.q.addEventListener('input', function (e) {
